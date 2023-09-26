@@ -22,6 +22,9 @@ export class Session {
   @Column({ type: 'varchar' })
   roomId: string;
 
+  @Column({ type: 'timestamp' })
+  lastUpdated: number;
+
   @ManyToOne(() => Agent, (agent) => agent.sessions)
   agent: Agent;
 
