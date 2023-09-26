@@ -9,6 +9,9 @@ export class Agent {
   @Column({ type: 'boolean', default: true })
   isActive: boolean;
 
+  @Column({ type: 'varchar', nullable: true })
+  socketId: string;
+
   // MID / LIV
   @Column({ type: 'varchar', length: 3 })
   type: string;

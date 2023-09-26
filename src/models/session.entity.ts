@@ -14,6 +14,12 @@ export class Session {
   id: string;
 
   @Column({ type: 'varchar' })
+  name: string;
+
+  @Column({ type: 'varchar' })
+  email: string;
+
+  @Column({ type: 'varchar' })
   roomId: string;
 
   @ManyToOne(() => Agent, (agent) => agent.sessions)
