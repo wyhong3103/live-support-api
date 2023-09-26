@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Agent, Message, Session, Queue } from './models';
+import { SupportModule } from './support/support.module';
 require('dotenv').config();
 
 @Module({
@@ -19,6 +20,7 @@ require('dotenv').config();
       entities: [Agent, Message, Session, Queue],
       synchronize: true,
     }),
+    SupportModule,
   ],
   controllers: [AppController],
   providers: [AppService],
