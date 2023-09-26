@@ -3,7 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Agent, Message, Session, Queue } from './models';
+import { Agent, Message, Session } from './models';
 import { SupportModule } from './support/support.module';
 require('dotenv').config();
 
@@ -17,7 +17,7 @@ require('dotenv').config();
       username: process.env.DB_USER,
       password: process.env.DB_PW,
       database: process.env.DB_NAME,
-      entities: [Agent, Message, Session, Queue],
+      entities: [Agent, Message, Session],
       synchronize: true,
     }),
     SupportModule,
