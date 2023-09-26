@@ -9,7 +9,7 @@ import { Agent } from './agent.entity';
 import { Message } from './message.entity';
 
 @Entity()
-export abstract class Session {
+export class Session {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 

@@ -8,7 +8,7 @@ import {
 import { Session } from './session.entity';
 
 @Entity()
-export abstract class Message {
+export class Message {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 

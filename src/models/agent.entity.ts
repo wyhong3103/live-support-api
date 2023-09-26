@@ -2,7 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Session } from './session.entity';
 
 @Entity()
-export abstract class Agent {
+export class Agent {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 

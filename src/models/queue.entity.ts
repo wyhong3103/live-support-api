@@ -6,7 +6,7 @@ import {
 } from 'typeorm';
 
 @Entity()
-export abstract class Queue {
+export class Queue {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
