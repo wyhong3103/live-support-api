@@ -6,7 +6,7 @@ export class Agent {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'boolean', default: true })
+  @Column({ type: 'boolean', default: false })
   isActive: boolean;
 
   @Column({ type: 'varchar', nullable: true })
