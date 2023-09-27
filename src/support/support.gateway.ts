@@ -69,7 +69,9 @@ export class SupportGateway
 
   @SubscribeMessage('join_room')
   async handleJoinRoom(client: any, roomId: string) {
-    client.join(roomId);
+    if (await this.supportService.isSessionAlive(roomId)) {
+      client.join(roomId);
+    }
   }
 
   @SubscribeMessage('message')
@@ -88,7 +90,6 @@ export class SupportGateway
           payload.text,
           payload.roomId,
         );
-        console.log(message);
         this.server.to(payload.roomId).emit('receive_message', message);
       }
     }
