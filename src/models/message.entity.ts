@@ -12,13 +12,10 @@ export class Message {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'int' })
-  lastUpdated: number;
-
   @Column({ type: 'varchar' })
   message: string;
 
-  // USR/ BOT/ SUP
+  // USR/ AGT
   @Column({ type: 'varchar', length: 3 })
   author: string;
 
