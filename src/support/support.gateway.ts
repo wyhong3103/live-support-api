@@ -74,12 +74,15 @@ export class SupportGateway
 
   @SubscribeMessage('message')
   async handleMessage(client: any, payload: any) {
-    if (await this.supportService.insertMessage(payload)) {
+    if (await this.supportService.isSessionAlive(payload.roomId)) {
+      await this.supportService.insertMessage(payload);
       this.server.to(payload.roomId).emit('receive_message', {
         roomId: payload.roomId,
         author: payload.author,
         message: payload.text,
       });
+
+      // reply bot message
       if (await this.supportService.isBotSession(payload.roomId)) {
         const message = await this.supportService.getBotResponse(
           payload.text,
@@ -93,9 +96,23 @@ export class SupportGateway
 
   @SubscribeMessage('end_chat')
   async handleEndChat(client: any, payload: any) {
-    if (this.supportService.isRoomAgent(client.id, payload.roomID)) {
+    if (
+      (await this.supportService.isSessionAlive(payload.roomId)) &&
+      (await this.supportService.isRoomAgent(client.id, payload.roomID))
+    ) {
       this.supportService.endChat(payload.roomId);
       this.server.to(payload.roomId).emit('end_chat');
+    }
+  }
+
+  @SubscribeMessage('switch_chat')
+  async handleSwitchChat(client: any, payload: any) {
+    if (
+      (await this.supportService.isSessionAlive(payload.roomId)) &&
+      (await this.supportService.isRoomAgent(client.id, payload.roomID))
+    ) {
+      this.supportService.endChat(payload.roomId);
+      this.server.to(payload.roomId).emit('switch_chat');
     }
   }
 }

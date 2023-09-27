@@ -192,6 +192,21 @@ export class SupportService {
     };
   }
 
+  async isSessionAlive(roomId: string) {
+    const now = Math.floor(Date.now() / 1000);
+
+    const session = await this.sessionRepo.findOne({
+      where: {
+        roomId,
+      },
+    });
+
+    if (session.endedEarly || now - session.lastUpdated > 5 * 60) {
+      return false;
+    }
+    return true;
+  }
+
   async insertMessage(payload: any) {
     const now = Math.floor(Date.now() / 1000);
 
@@ -201,10 +216,6 @@ export class SupportService {
       },
     });
 
-    if (session.endedEarly || now - session.lastUpdated > 5 * 60) {
-      return false;
-    }
-
     const message = new Message();
     message.author = payload.author;
     message.message = payload.text;
@@ -213,8 +224,6 @@ export class SupportService {
 
     session.lastUpdated = now;
     await this.sessionRepo.save(session);
-
-    return true;
   }
 
   async isRoomAgent(agentSocketId: string, roomId: string) {
@@ -242,6 +251,6 @@ export class SupportService {
 
     session.endedEarly = true;
 
-    this.sessionRepo.save(session);
+    await this.sessionRepo.save(session);
   }
 }
