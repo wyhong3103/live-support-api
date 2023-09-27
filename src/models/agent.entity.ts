@@ -12,10 +12,6 @@ export class Agent {
   @Column({ type: 'varchar', nullable: true })
   socketId: string;
 
-  // MID / LIV
-  @Column({ type: 'varchar', length: 3 })
-  type: string;
-
   @Column({ type: 'varchar' })
   email: string;
 

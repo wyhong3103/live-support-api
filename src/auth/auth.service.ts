@@ -68,7 +68,6 @@ export class AuthService {
     const user = new Agent();
     user.email = dto.email;
     user.password = hash;
-    user.type = dto.type;
 
     const u = await this.agentRepo.save(user);
 

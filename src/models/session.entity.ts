@@ -25,6 +25,9 @@ export class Session {
   @Column({ type: 'int' })
   lastUpdated: number;
 
+  @Column({ type: 'boolean', default: false })
+  endedEarly: boolean;
+
   @ManyToOne(() => Agent, (agent) => agent.sessions)
   agent: Agent;
 
