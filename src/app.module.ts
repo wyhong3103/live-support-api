@@ -5,6 +5,9 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Agent, Message, Session } from './models';
 import { SupportModule } from './support/support.module';
+import { SessionModule } from './session/session.module';
+import { AgentModule } from './agent/agent.module';
+import { AuthModule } from './auth/auth.module';
 require('dotenv').config();
 
 @Module({
@@ -20,7 +23,13 @@ require('dotenv').config();
       entities: [Agent, Message, Session],
       synchronize: true,
     }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     SupportModule,
+    SessionModule,
+    AgentModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
