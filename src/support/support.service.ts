@@ -79,11 +79,39 @@ export class SupportService {
   }
 
   async findLeastBurdenedAgent() {
-    return this.agentRepo.findOne({
+    const agents = await this.agentRepo.find({
       where: {
-        id: '28aa08be-d834-4586-b64e-2efb6812046c',
+        isActive: true,
+      },
+      relations: {
+        sessions: true,
       },
     });
+
+    const now = Math.floor(Date.now() / 1000);
+    let mn = Infinity;
+    const burden = [];
+    for (const i of agents) {
+      let cnt = 0;
+      for (const j of i.sessions) {
+        if (!j.endedEarly && now - j.lastUpdated < 5 * 60) {
+          cnt += 1;
+        }
+      }
+      burden.push(cnt);
+      mn = Math.min(mn, cnt);
+    }
+
+    const leastBurdened = [];
+    for (let i = 0; i < agents.length; i++) {
+      if (burden[i] === mn) {
+        leastBurdened.push(i);
+      }
+    }
+
+    const selectedIndex = Math.floor(Math.random() * leastBurdened.length);
+
+    return agents[selectedIndex];
   }
 
   async assign(socketId: string, to: string) {
@@ -94,6 +122,7 @@ export class SupportService {
     session.roomId = roomId;
     session.name = clientDetail.name;
     session.email = clientDetail.email;
+    session.lastUpdated = Math.floor(Date.now() / 1000);
 
     if (to === 'AGT') {
       const agentSelected = await this.findLeastBurdenedAgent();
@@ -108,8 +137,28 @@ export class SupportService {
     };
   }
 
-  async insertMessage(payload) {
-    // check if session alive
-    // send
+  async insertMessage(payload: any) {
+    const now = Math.floor(Date.now() / 1000);
+
+    const session = await this.sessionRepo.findOne({
+      where: {
+        roomId: payload.roomId,
+      },
+    });
+
+    if (now - session.lastUpdated >= 5 * 60) {
+      return false;
+    }
+
+    const message = new Message();
+    message.author = payload.author;
+    message.message = payload.text;
+    message.session = session;
+    await this.messageRepo.save(message);
+
+    session.lastUpdated = now;
+    await this.sessionRepo.save(session);
+
+    return true;
   }
 }

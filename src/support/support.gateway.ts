@@ -18,7 +18,7 @@ export class SupportGateway
   constructor(private supportService: SupportService) {}
 
   handleConnection(client: any) {
-    console.log(client.id);
+    console.log(`${client.id} has joined.`);
   }
 
   async handleDisconnect(client: any) {
@@ -67,15 +67,17 @@ export class SupportGateway
 
   @SubscribeMessage('join_room')
   async handleJoinRoom(client: any, roomId: string) {
-    console.log('joined');
     client.join(roomId);
   }
 
   @SubscribeMessage('message')
   async handleMessage(client: any, payload: any) {
-    client.to(payload.roomId).emit('receive_message', {
-      roomId: payload.roomId,
-      message: payload.message,
-    });
+    if (await this.supportService.insertMessage(payload)) {
+      this.server.to(payload.roomId).emit('receive_message', {
+        roomId: payload.roomId,
+        author: payload.author,
+        message: payload.text,
+      });
+    }
   }
 }
