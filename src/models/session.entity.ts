@@ -22,7 +22,7 @@ export class Session {
   @Column({ type: 'varchar' })
   roomId: string;
 
-  @Column({ type: 'timestamp' })
+  @Column({ type: 'int' })
   lastUpdated: number;
 
   @ManyToOne(() => Agent, (agent) => agent.sessions)
