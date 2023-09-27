@@ -16,10 +16,7 @@ export class AuthService {
     private config: ConfigService,
   ) {}
 
-  async signToken(
-    userId: string,
-    email: string,
-  ): Promise<{ access_token: string }> {
+  async signToken(userId: string, email: string): Promise<string> {
     const payload = {
       id: userId,
       email,
@@ -29,9 +26,7 @@ export class AuthService {
       secret: this.config.get('JWT_SECRET'),
     });
 
-    return {
-      access_token: token,
-    };
+    return token;
   }
 
   async login(dto: LoginDto) {
@@ -51,7 +46,10 @@ export class AuthService {
       throw new ForbiddenException('Credentials incorrect.');
     }
 
-    return this.signToken(user.id, user.email);
+    return {
+      access_token: await this.signToken(user.id, user.email),
+      id: user.id,
+    };
   }
 
   async signup(dto: SignUpDto) {
@@ -74,6 +72,9 @@ export class AuthService {
 
     const u = await this.agentRepo.save(user);
 
-    return this.signToken(u.id, u.email);
+    return {
+      access_token: await this.signToken(u.id, u.email),
+      id: u.id,
+    };
   }
 }
