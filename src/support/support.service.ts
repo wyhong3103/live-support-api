@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, MethodNotAllowedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm/repository/Repository';
 import { Agent, Message, Session } from '../models';
 import { EnqueueInput } from './dto';
 import * as crypto from 'crypto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class SupportService {
@@ -13,6 +14,7 @@ export class SupportService {
     @InjectRepository(Agent) private agentRepo: Repository<Agent>,
     @InjectRepository(Message) private messageRepo: Repository<Message>,
     @InjectRepository(Session) private sessionRepo: Repository<Session>,
+    private config: ConfigService,
   ) {
     this.clientQueue = [];
   }
@@ -114,7 +116,20 @@ export class SupportService {
     return agents[selectedIndex];
   }
 
-  async assign(socketId: string, to: string) {
+  async getAgentBot() {
+    return await this.agentRepo.findOne({
+      where: {
+        id: this.config.get('BOT_ID'),
+      },
+    });
+  }
+
+  async assign(
+    socketId: string,
+    to: string,
+    botUrl: string,
+    botAuthToken: string,
+  ) {
     const clientDetail: any = this.removeQueue(socketId);
 
     const roomId = this.generateRandomHex(32);
@@ -122,10 +137,15 @@ export class SupportService {
     session.roomId = roomId;
     session.name = clientDetail.name;
     session.email = clientDetail.email;
+    session.botUrl = botUrl;
+    session.botAuthToken = botAuthToken;
     session.lastUpdated = Math.floor(Date.now() / 1000);
 
     if (to === 'AGT') {
       const agentSelected = await this.findLeastBurdenedAgent();
+      session.agent = agentSelected;
+    } else {
+      const agentSelected = await this.getAgentBot();
       session.agent = agentSelected;
     }
     await this.sessionRepo.save(session);
@@ -134,6 +154,41 @@ export class SupportService {
       roomId,
       clientId: socketId,
       agentId: session.agent.socketId,
+    };
+  }
+
+  async isBotSession(roomId: string) {
+    const session = await this.sessionRepo.findOne({
+      where: {
+        roomId,
+      },
+      relations: {
+        agent: true,
+      },
+    });
+
+    if (session.agent.id === this.config.get('BOT_ID')) {
+      return true;
+    }
+    return false;
+  }
+
+  async getBotResponse(text: string, roomId: string) {
+    const session = await this.sessionRepo.findOne({
+      where: {
+        roomId,
+      },
+      relations: {
+        agent: true,
+      },
+    });
+
+    const { botUrl, botAuthToken } = session;
+
+    return {
+      roomId,
+      author: 'AGT',
+      message: 'test',
     };
   }
 
@@ -146,7 +201,7 @@ export class SupportService {
       },
     });
 
-    if (now - session.lastUpdated >= 5 * 60) {
+    if (session.endedEarly || now - session.lastUpdated > 5 * 60) {
       return false;
     }
 
@@ -160,5 +215,33 @@ export class SupportService {
     await this.sessionRepo.save(session);
 
     return true;
+  }
+
+  async isRoomAgent(agentSocketId: string, roomId: string) {
+    const session = await this.sessionRepo.findOne({
+      where: {
+        roomId,
+      },
+      relations: {
+        agent: true,
+      },
+    });
+
+    return agentSocketId === session.agent.socketId;
+  }
+
+  async endChat(roomId: string) {
+    const session = await this.sessionRepo.findOne({
+      where: {
+        roomId,
+      },
+      relations: {
+        agent: true,
+      },
+    });
+
+    session.endedEarly = true;
+
+    this.sessionRepo.save(session);
   }
 }

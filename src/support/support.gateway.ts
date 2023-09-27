@@ -60,6 +60,8 @@ export class SupportGateway
     const assignPayload = await this.supportService.assign(
       payload.clientId,
       payload.to,
+      payload.botUrl,
+      payload.botAuthToken,
     );
     this.server.emit('receive_assigned', assignPayload);
     this.emitQueue();
@@ -78,6 +80,22 @@ export class SupportGateway
         author: payload.author,
         message: payload.text,
       });
+      if (await this.supportService.isBotSession(payload.roomId)) {
+        const message = await this.supportService.getBotResponse(
+          payload.text,
+          payload.roomId,
+        );
+        console.log(message);
+        this.server.to(payload.roomId).emit('receive_message', message);
+      }
+    }
+  }
+
+  @SubscribeMessage('end_chat')
+  async handleEndChat(client: any, payload: any) {
+    if (this.supportService.isRoomAgent(client.id, payload.roomID)) {
+      this.supportService.endChat(payload.roomId);
+      this.server.to(payload.roomId).emit('end_chat');
     }
   }
 }
