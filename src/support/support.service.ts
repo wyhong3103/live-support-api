@@ -188,8 +188,23 @@ export class SupportService {
     return {
       roomId,
       author: 'AGT',
-      message: 'test',
+      message: 'This is bot replying.',
     };
+  }
+
+  async isSessionTimedOut(roomId: string) {
+    const now = Math.floor(Date.now() / 1000);
+
+    const session = await this.sessionRepo.findOne({
+      where: {
+        roomId,
+      },
+    });
+
+    if (now - session.lastUpdated > 5 * 60) {
+      return true;
+    }
+    return false;
   }
 
   async isSessionAlive(roomId: string) {

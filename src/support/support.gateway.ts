@@ -92,6 +92,8 @@ export class SupportGateway
         );
         this.server.to(payload.roomId).emit('receive_message', message);
       }
+    } else if (await this.supportService.isSessionTimedOut(payload.roomId)) {
+      this.server.to(payload.roomId).emit('timed_out');
     }
   }
 
