@@ -9,6 +9,6 @@ async function bootstrap() {
     origin: [process.env.HOST_URL],
   });
   app.useGlobalPipes(new ValidationPipe());
-  await app.listen(3000);
+  await app.listen(process.env.SERVER_PORT);
 }
 bootstrap();
