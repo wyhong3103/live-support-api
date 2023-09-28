@@ -2,24 +2,17 @@ import {
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
-  OnGatewayConnection,
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Server } from 'socket.io';
 import { SupportService } from './support.service';
 
 @WebSocketGateway({ cors: true })
-export class SupportGateway
-  implements OnGatewayConnection, OnGatewayDisconnect
-{
+export class SupportGateway implements OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
   constructor(private supportService: SupportService) {}
-
-  handleConnection(client: any) {
-    console.log(`${client.id} has joined.`);
-  }
 
   async handleDisconnect(client: any) {
     await this.supportService.disconnect(client.id);
@@ -31,13 +24,11 @@ export class SupportGateway
     this.server.to('mid').emit('receive_queue', { queue });
   }
 
-  // auth guard
   @SubscribeMessage('support_agent_on')
   handleSupportAgentOn(client: any, payload: any): void {
     this.supportService.supportAgentOn(client.id, payload.id);
   }
 
-  // auth guard
   @SubscribeMessage('mid_agent_on')
   async handleMidAgentOn(client: any) {
     client.join('mid');
