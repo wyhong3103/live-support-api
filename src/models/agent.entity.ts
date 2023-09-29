@@ -13,6 +13,9 @@ export class Agent {
   socketId: string;
 
   @Column({ type: 'varchar' })
+  type: string;
+
+  @Column({ type: 'varchar' })
   email: string;
 
   @Column({ type: 'varchar' })
