@@ -33,6 +33,7 @@ export class AuthService {
     const user = await this.agentRepo.findOne({
       where: {
         email: dto.email,
+        type: dto.type,
       },
     });
 
@@ -68,6 +69,7 @@ export class AuthService {
     const user = new Agent();
     user.email = dto.email;
     user.password = hash;
+    user.type = dto.type;
 
     const u = await this.agentRepo.save(user);
 
