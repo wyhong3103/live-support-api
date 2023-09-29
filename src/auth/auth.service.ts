@@ -47,6 +47,10 @@ export class AuthService {
       throw new ForbiddenException('Credentials incorrect.');
     }
 
+    if (user.isActive) {
+      throw new ForbiddenException('Account is signed in on another device.');
+    }
+
     return {
       access_token: await this.signToken(user.id, user.email),
       id: user.id,
