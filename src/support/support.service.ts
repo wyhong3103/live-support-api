@@ -55,7 +55,7 @@ export class SupportService {
     agent.isActive = true;
     agent.socketId = socketId;
 
-    this.agentRepo.save(agent);
+    await this.agentRepo.save(agent);
   }
 
   async supportAgentOff(socketId: string) {
@@ -73,6 +73,17 @@ export class SupportService {
     await this.agentRepo.save(agent);
   }
 
+  async countActiveSupportAgents() {
+    const agents = await this.agentRepo.find({
+      where: {
+        isActive: true,
+        type: 'SPT',
+      },
+    });
+
+    return agents.length;
+  }
+
   // Session Handling
   generateRandomHex(length: number) {
     const bytes = crypto.randomBytes(length / 2);
@@ -84,6 +95,7 @@ export class SupportService {
     const agents = await this.agentRepo.find({
       where: {
         isActive: true,
+        type: 'SPT',
       },
       relations: {
         sessions: true,

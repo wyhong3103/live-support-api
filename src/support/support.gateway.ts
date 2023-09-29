@@ -17,6 +17,7 @@ export class SupportGateway implements OnGatewayDisconnect {
   async handleDisconnect(client: any) {
     await this.supportService.disconnect(client.id);
     this.emitQueue();
+    this.emitSupportAgentCount();
   }
 
   async emitQueue() {
@@ -24,15 +25,22 @@ export class SupportGateway implements OnGatewayDisconnect {
     this.server.to('mid').emit('receive_queue', { queue });
   }
 
+  async emitSupportAgentCount() {
+    const count = await this.supportService.countActiveSupportAgents();
+    this.server.to('mid').emit('receive_agent_count', count);
+  }
+
   @SubscribeMessage('support_agent_on')
-  handleSupportAgentOn(client: any, payload: any): void {
-    this.supportService.supportAgentOn(client.id, payload.id);
+  async handleSupportAgentOn(client: any, payload: any) {
+    await this.supportService.supportAgentOn(client.id, payload.id);
+    this.emitSupportAgentCount();
   }
 
   @SubscribeMessage('mid_agent_on')
   async handleMidAgentOn(client: any) {
     client.join('mid');
     this.emitQueue();
+    this.emitSupportAgentCount();
   }
 
   @SubscribeMessage('enqueue')
